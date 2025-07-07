@@ -1,103 +1,263 @@
-import Image from "next/image";
+"use client";
+import React, { useEffect, useState } from "react";
 
-export default function Home() {
+type TransferRumor = {
+  id: string;
+  playerName: string;
+  currentClub: string;
+  targetClub: string;
+  position: string;
+  value: string;
+  probability: number;
+  timeAgo: string;
+  status: "hot" | "warm" | "cold";
+  playerImage?: string;
+  currentClubLogo?: string;
+  targetClubLogo?: string;
+};
+
+const mockRumors: TransferRumor[] = [
+  {
+    id: "1",
+    playerName: "Kylian Mbappé",
+    currentClub: "Paris Saint-Germain",
+    targetClub: "Real Madrid",
+    position: "Forward",
+    value: "€180M",
+    probability: 85,
+    timeAgo: "2 hours ago",
+    status: "hot",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704e",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704em",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704o",
+  },
+  {
+    id: "2",
+    playerName: "Erling Haaland",
+    currentClub: "Manchester City",
+    targetClub: "Barcelona",
+    position: "Striker",
+    value: "€200M",
+    probability: 72,
+    timeAgo: "4 hours ago",
+    status: "hot",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026709",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026708",
+  },
+  {
+    id: "3",
+    playerName: "Declan Rice",
+    currentClub: "West Ham United",
+    targetClub: "Arsenal",
+    position: "Midfielder",
+    value: "€120M",
+    probability: 91,
+    timeAgo: "1 hour ago",
+    status: "hot",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026707",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026706",
+  },
+  {
+    id: "4",
+    playerName: "Jude Bellingham",
+    currentClub: "Borussia Dortmund",
+    targetClub: "Real Madrid",
+    position: "Midfielder",
+    value: "€130M",
+    probability: 89,
+    timeAgo: "3 hours ago",
+    status: "hot",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704k",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026705",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704",
+  },
+  {
+    id: "5",
+    playerName: "Victor Osimhen",
+    currentClub: "Napoli",
+    targetClub: "Manchester United",
+    position: "Striker",
+    value: "€150M",
+    probability: 68,
+    timeAgo: "6 hours ago",
+    status: "warm",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704e",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026703",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026702",
+  },
+  {
+    id: "6",
+    playerName: "Mason Mount",
+    currentClub: "Chelsea",
+    targetClub: "Liverpool",
+    position: "Midfielder",
+    value: "€80M",
+    probability: 45,
+    timeAgo: "8 hours ago",
+    status: "warm",
+    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704d",
+    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026701",
+    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026700",
+  },
+];
+
+const getColor = (prob: number) => {
+  if (prob >= 80) return "text-green-600";
+  if (prob >= 60) return "text-orange-600";
+  return "text-red-600";
+};
+
+export default function TransfersPage() {
+  const [rumors, setRumors] = useState<TransferRumor[]>([]);
+
+  useEffect(() => {
+    setRumors(mockRumors);
+  }, []);
+
+  const trending = rumors.filter((r) => r.probability > 70);
+  const others = rumors.filter((r) => r.probability <= 70);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="bg-gradient-to-b from-white to-violet-50 p-6">
+      {/* Hero Section */}
+      <section className="text-center mb-16">
+        <p className="text-purple-600 font-medium">Live Transfer Updates</p>
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-gray-600">
+          Stay Ahead of Every <span className="text-purple-600">Transfer</span>
+        </h1>
+        <p className="text-gray-600 text-lg mb-6">
+          Get real-time updates on the hottest transfer rumors, confirmed deals,
+          and insider information from the world’s top football leagues.
+        </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Search bar */}
+        <div className="flex w-full max-w-md mx-auto mt-4">
+          <input
+            type="text"
+            placeholder="Search players, clubs..."
+            className="w-full border px-4 py-2 rounded-l-md shadow focus:outline-none focus:ring-2 focus:ring-purple-400"
+          />
+          <button className="bg-purple-600 text-white px-4 py-2 rounded-r-md hover:bg-purple-700">
+            Search
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 mt-10 gap-6">
+          <div>
+            <p className="text-3xl font-bold text-purple-600">
+              {rumors.length}
+            </p>
+            <p className="text-gray-500">Active Rumors</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold text-purple-600">
+              {trending.length}
+            </p>
+            <p className="text-gray-500">Trending Now</p>
+          </div>
+          <div>
+            <p className="text-3xl font-bold text-purple-600">24/7</p>
+            <p className="text-gray-500">Live Coverage</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Trending Transfers */}
+      <section className="mb-16">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Trending Transfers
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trending.map((rumor) => (
+            <div key={rumor.id} className="bg-white p-4 rounded-lg shadow">
+              <div className="flex items-center gap-4 mb-2">
+                <img
+                  src={rumor.playerImage}
+                  alt={rumor.playerName}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="font-bold text-lg text-gray-600">
+                    {rumor.playerName}
+                  </h3>
+                  <p className="text-sm text-gray-500">{rumor.position}</p>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <img src={rumor.currentClubLogo} className="w-6 h-6" />
+                  <span className="text-sm text-gray-700">
+                    {rumor.currentClub}
+                  </span>
+                </div>
+                <span className="text-purple-500 font-bold">→</span>
+                <div className="flex items-center gap-2">
+                  <img src={rumor.targetClubLogo} className="w-6 h-6" />
+                  <span className="text-sm text-gray-700">
+                    {rumor.targetClub}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-4">
+                <span className="font-bold text-green-600">{rumor.value}</span>
+                <span
+                  className={`${getColor(rumor.probability)} font-semibold`}
+                >
+                  {rumor.probability}%
+                </span>
+                <span className="text-xs text-gray-400">{rumor.timeAgo}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* More News */}
+      <section className="mb-16">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          More Transfer News
+        </h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          {others.map((rumor) => (
+            <div
+              key={rumor.id}
+              className="bg-white p-4 rounded-lg shadow flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={rumor.playerImage}
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <h3 className="font-bold text-md text-gray-600">
+                    {rumor.playerName}
+                  </h3>
+                  <p className="text-sm text-gray-500">{rumor.position}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-green-600">{rumor.value}</p>
+                <p className="text-xs text-gray-400">{rumor.timeAgo}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-purple-50 p-8 rounded-lg text-center">
+        <h3 className="text-2xl font-bold text-gray-800 mb-2">
+          Never Miss a Transfer
+        </h3>
+        <p className="text-gray-500 mb-4">
+          Get instant notifications for your favorite players and clubs
+        </p>
+        <button className="px-6 py-2 bg-purple-600 text-white rounded shadow hover:bg-purple-700">
+          Set Up Alerts
+        </button>
+      </section>
     </div>
   );
 }
