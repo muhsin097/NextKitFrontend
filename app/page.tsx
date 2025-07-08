@@ -127,42 +127,61 @@ export default function TransfersPage() {
         </div>
       </section>}
 
-      {/* Other Rumors */}
-   { others && others?.length > 0 &&  <section className="mb-16">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        { `${trending?.length===0 ? 'Transfer News':'More Transfer News'}` }
-        </h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {others?.map((rumor) => (
-            <div
-              key={rumor.id}
-              className="bg-white p-4 rounded-lg shadow flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <Image
-                  src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
-                  className="w-10 h-10 rounded-full"
-                  alt={rumor?.player?.name}
+   {/* Other Rumors */}
+{others && others?.length > 0 && (
+  <section className="mb-16">
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      {trending.length === 0 ? "Transfer News" : "More Transfer News"}
+    </h2>
 
-                />
-                <div>
-                  <h3 className="font-bold text-md text-gray-600">
-                    {rumor?.player?.name}
-                  </h3>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold text-green-600">{rumor?.score}</p>
-                <p className="text-xs text-gray-400">
-                  {formatDistanceToNow(new Date(rumor?.lastUpdated), {
-                    addSuffix: true,
-                  })}
-                </p>
-              </div>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {others.map((rumor) => (
+        <Link
+          href={`/${rumor?.slug}`}
+          key={rumor.id}
+          className="cursor-pointer bg-white p-4 rounded-lg shadow block hover:shadow-md transition"
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <Image
+              src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
+              alt={rumor?.player?.name}
+              width={100}
+              height={100}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <div>
+              <h3 className="font-bold text-lg text-gray-700">
+                {rumor?.player?.name}
+              </h3>
+              <p className="text-sm text-gray-500">
+                Age: {differenceInYears(new Date(), new Date(rumor?.player?.dob))}
+              </p>
             </div>
-          ))}
-        </div>
-      </section>}
+          </div>
+
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-700">{rumor?.fromClub?.name}</span>
+            <span className="text-purple-500 font-bold">→</span>
+            <span className="text-sm text-gray-700">{rumor?.toClub?.name}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-green-600">€{rumor?.fee}M</span>
+            <span className={`${getColor(rumor?.score)} font-semibold`}>
+              {rumor.score}%
+            </span>
+            <span className="text-xs text-gray-400">
+              {formatDistanceToNow(new Date(rumor?.lastUpdated), {
+                addSuffix: true,
+              })}
+            </span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  </section>
+)}
+
 
       {/* CTA */}
       <section className="bg-purple-50 p-8 rounded-lg text-center">
