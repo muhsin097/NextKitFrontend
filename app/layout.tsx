@@ -38,7 +38,7 @@ export default function RootLayout({
               <div className="text-xl font-bold text-gray-700">My Next Kit</div>
               {/* Desktop Nav */}
               <nav className="hidden md:flex space-x-4 text-gray-600">
-                <a href="#" className="hover:text-purple-600">
+                <a href="./" className="hover:text-purple-600">
                   Home
                 </a>
                 <a href="#" className="hover:text-purple-600">

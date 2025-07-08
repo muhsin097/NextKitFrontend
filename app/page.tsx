@@ -7,6 +7,7 @@ import {
 import { TransferAPIResponse } from "./types";
 import { formatDistanceToNow,differenceInYears } from "date-fns";
 import Image from 'next/image'
+import Link from 'next/link'
 
 const getColor = (prob: number) => {
   if (prob >= 80) return "text-green-600";
@@ -17,7 +18,6 @@ const getColor = (prob: number) => {
 export default function TransfersPage() {
   const [trendingApi, setTrending] = useState<TransferAPIResponse>();
   const [otherApi, setOther] = useState<TransferAPIResponse>();
-
   useEffect(() => {
     getTransfers();
   }, []);
@@ -83,7 +83,7 @@ export default function TransfersPage() {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trending?.map((rumor) => (
-            <div key={rumor?.id} className="bg-white p-4 rounded-lg shadow">
+            <Link href={`/${rumor?.slug}`} key={rumor?.id} className="cursor-pointer bg-white p-4 rounded-lg shadow">
               <div className="flex items-center gap-4 mb-2">
                 <Image
                   src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
@@ -112,7 +112,7 @@ export default function TransfersPage() {
                 </span>
               </div>
               <div className="flex justify-between items-center mt-4">
-                <span className="font-bold text-green-600">${rumor?.fee}</span>
+                <span className="font-bold text-green-600">€{rumor?.fee}M</span>
                 <span className={`${getColor(rumor?.score)} font-semibold`}>
                   {rumor.score}%
                 </span>
@@ -122,7 +122,7 @@ export default function TransfersPage() {
                   })}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>}

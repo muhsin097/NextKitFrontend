@@ -41,6 +41,8 @@ export type Transfer = {
   fromClub: Club;
   toClub: Club;
   fee:number;
+  slug:string;
+  trending:boolean;
 };
 
 export type Player = {
@@ -55,6 +57,7 @@ export type Player = {
   publishedAt: string;
   avatar: Media;
   club?: Club;
+  articles: Article[];
 };
 
 export type Club = {
@@ -100,3 +103,77 @@ export type Format = {
   height: number;
   sizeInBytes: number;
 };
+
+export interface PlayerResponse {
+  data: PlayerRes[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
+export interface PlayerRes {
+  id: number;
+  attributes: {
+    name: string;
+    documentId: string;
+    details: string;
+    country: string;
+    dob: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+    avatar: Avatar;
+    articles: Article[];
+    club?: Club;
+  };
+}
+
+export interface Avatar {
+  id: number;
+  name: string;
+  url: string;
+  formats?: {
+    large?: ImageFormat;
+    medium?: ImageFormat;
+    small?: ImageFormat;
+    thumbnail?: ImageFormat;
+  };
+}
+
+export interface ImageFormat {
+  ext: string;
+  url: string;
+  width: number;
+  height: number;
+  size: number;
+  mime: string;
+}
+
+ 
+export interface ArticleContentChild {
+  text: string;
+  type: string;
+}
+
+export interface ArticleContent {
+  type: string;
+  children: ArticleContentChild[];
+}
+
+export interface Article {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  publishedTime: string;
+  link: string;
+  content: ArticleContent[];
+}
