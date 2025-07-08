@@ -1,123 +1,36 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
-type TransferRumor = {
-  id: string;
-  playerName: string;
-  currentClub: string;
-  targetClub: string;
-  position: string;
-  value: string;
-  probability: number;
-  timeAgo: string;
-  status: "hot" | "warm" | "cold";
-  playerImage?: string;
-  currentClubLogo?: string;
-  targetClubLogo?: string;
-};
-
-const mockRumors: TransferRumor[] = [
-  {
-    id: "1",
-    playerName: "Kylian Mbappé",
-    currentClub: "Paris Saint-Germain",
-    targetClub: "Real Madrid",
-    position: "Forward",
-    value: "€180M",
-    probability: 85,
-    timeAgo: "2 hours ago",
-    status: "hot",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704e",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704em",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704o",
-  },
-  {
-    id: "2",
-    playerName: "Erling Haaland",
-    currentClub: "Manchester City",
-    targetClub: "Barcelona",
-    position: "Striker",
-    value: "€200M",
-    probability: 72,
-    timeAgo: "4 hours ago",
-    status: "hot",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026709",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026708",
-  },
-  {
-    id: "3",
-    playerName: "Declan Rice",
-    currentClub: "West Ham United",
-    targetClub: "Arsenal",
-    position: "Midfielder",
-    value: "€120M",
-    probability: 91,
-    timeAgo: "1 hour ago",
-    status: "hot",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026707",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026706",
-  },
-  {
-    id: "4",
-    playerName: "Jude Bellingham",
-    currentClub: "Borussia Dortmund",
-    targetClub: "Real Madrid",
-    position: "Midfielder",
-    value: "€130M",
-    probability: 89,
-    timeAgo: "3 hours ago",
-    status: "hot",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704k",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026705",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026704",
-  },
-  {
-    id: "5",
-    playerName: "Victor Osimhen",
-    currentClub: "Napoli",
-    targetClub: "Manchester United",
-    position: "Striker",
-    value: "€150M",
-    probability: 68,
-    timeAgo: "6 hours ago",
-    status: "warm",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704e",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026703",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026702",
-  },
-  {
-    id: "6",
-    playerName: "Mason Mount",
-    currentClub: "Chelsea",
-    targetClub: "Liverpool",
-    position: "Midfielder",
-    value: "€80M",
-    probability: 45,
-    timeAgo: "8 hours ago",
-    status: "warm",
-    playerImage: "https://i.pravatar.cc/300?u=a042581f4e29026704d",
-    currentClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026701",
-    targetClubLogo: "https://i.pravatar.cc/300?u=a042581f4e29026700",
-  },
-];
+import {
+  fetchTrendingTransfers,
+  fetchOtherTransfers,
+} from "./services/api";
+import { TransferAPIResponse } from "./types";
+import { formatDistanceToNow,differenceInYears } from "date-fns";
+import Image from 'next/image'
 
 const getColor = (prob: number) => {
   if (prob >= 80) return "text-green-600";
-  if (prob >= 60) return "text-orange-600";
+  if (prob >= 60) return "text-yellow-600";
   return "text-red-600";
 };
 
 export default function TransfersPage() {
-  const [rumors, setRumors] = useState<TransferRumor[]>([]);
+  const [trendingApi, setTrending] = useState<TransferAPIResponse>();
+  const [otherApi, setOther] = useState<TransferAPIResponse>();
 
   useEffect(() => {
-    setRumors(mockRumors);
+    getTransfers();
   }, []);
 
-  const trending = rumors.filter((r) => r.probability > 70);
-  const others = rumors.filter((r) => r.probability <= 70);
+  const getTransfers = async () => {
+    const trending = await fetchTrendingTransfers();
+    const others = await fetchOtherTransfers();
+    setTrending(trending);
+    setOther(others);
+  };
+
+  const trending = trendingApi?.data ?? [];
+  const others = otherApi?.data ?? [];
 
   return (
     <div className="bg-gradient-to-b from-white to-violet-50 p-6">
@@ -132,7 +45,6 @@ export default function TransfersPage() {
           and insider information from the world’s top football leagues.
         </p>
 
-        {/* Search bar */}
         <div className="flex w-full max-w-md mx-auto mt-4">
           <input
             type="text"
@@ -147,7 +59,7 @@ export default function TransfersPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 mt-10 gap-6">
           <div>
             <p className="text-3xl font-bold text-purple-600">
-              {rumors.length}
+              {trending.length + others.length}
             </p>
             <p className="text-gray-500">Active Rumors</p>
           </div>
@@ -165,86 +77,92 @@ export default function TransfersPage() {
       </section>
 
       {/* Trending Transfers */}
-      <section className="mb-16">
+    {trending && trending?.length >0 &&  <section className="mb-16">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
           Trending Transfers
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trending.map((rumor) => (
-            <div key={rumor.id} className="bg-white p-4 rounded-lg shadow">
+          {trending?.map((rumor) => (
+            <div key={rumor?.id} className="bg-white p-4 rounded-lg shadow">
               <div className="flex items-center gap-4 mb-2">
-                <img
-                  src={rumor.playerImage}
-                  alt={rumor.playerName}
+                <Image
+                  src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
+                  alt={rumor?.player?.name}
+                  width={100}
+                  height={100}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
                   <h3 className="font-bold text-lg text-gray-600">
-                    {rumor.playerName}
+                    {rumor?.player?.name}
                   </h3>
-                  <p className="text-sm text-gray-500">{rumor.position}</p>
+                    <p className="text-sm text-gray-500">
+    Age: {differenceInYears(new Date(), new Date(rumor?.player?.dob))} </p>
                 </div>
               </div>
               <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                  <img src={rumor.currentClubLogo} className="w-6 h-6" />
-                  <span className="text-sm text-gray-700">
-                    {rumor.currentClub}
-                  </span>
-                </div>
+                <span className="text-sm text-gray-700">
+                  {rumor?.fromClub?.name}
+                </span>
+             
+ 
                 <span className="text-purple-500 font-bold">→</span>
-                <div className="flex items-center gap-2">
-                  <img src={rumor.targetClubLogo} className="w-6 h-6" />
-                  <span className="text-sm text-gray-700">
-                    {rumor.targetClub}
-                  </span>
-                </div>
+                <span className="text-sm text-gray-700">
+                  {rumor?.toClub?.name}
+                </span>
               </div>
               <div className="flex justify-between items-center mt-4">
-                <span className="font-bold text-green-600">{rumor.value}</span>
-                <span
-                  className={`${getColor(rumor.probability)} font-semibold`}
-                >
-                  {rumor.probability}%
+                <span className="font-bold text-green-600">${rumor?.fee}</span>
+                <span className={`${getColor(rumor?.score)} font-semibold`}>
+                  {rumor.score}%
                 </span>
-                <span className="text-xs text-gray-400">{rumor.timeAgo}</span>
+                <span className="text-xs text-gray-400">
+                  {formatDistanceToNow(new Date(rumor?.lastUpdated), {
+                    addSuffix: true,
+                  })}
+                </span>
               </div>
             </div>
           ))}
         </div>
-      </section>
+      </section>}
 
-      {/* More News */}
-      <section className="mb-16">
+      {/* Other Rumors */}
+   { others && others?.length > 0 &&  <section className="mb-16">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          More Transfer News
+        { `${trending?.length===0 ? 'Transfer News':'More Transfer News'}` }
         </h2>
         <div className="grid md:grid-cols-2 gap-6">
-          {others.map((rumor) => (
+          {others?.map((rumor) => (
             <div
               key={rumor.id}
               className="bg-white p-4 rounded-lg shadow flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
-                <img
-                  src={rumor.playerImage}
+                <Image
+                  src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
                   className="w-10 h-10 rounded-full"
+                  alt={rumor?.player?.name}
+
                 />
                 <div>
                   <h3 className="font-bold text-md text-gray-600">
-                    {rumor.playerName}
+                    {rumor?.player?.name}
                   </h3>
-                  <p className="text-sm text-gray-500">{rumor.position}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-green-600">{rumor.value}</p>
-                <p className="text-xs text-gray-400">{rumor.timeAgo}</p>
+                <p className="font-semibold text-green-600">{rumor?.score}</p>
+                <p className="text-xs text-gray-400">
+                  {formatDistanceToNow(new Date(rumor?.lastUpdated), {
+                    addSuffix: true,
+                  })}
+                </p>
               </div>
             </div>
           ))}
         </div>
-      </section>
+      </section>}
 
       {/* CTA */}
       <section className="bg-purple-50 p-8 rounded-lg text-center">
