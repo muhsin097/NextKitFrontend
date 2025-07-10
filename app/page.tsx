@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { fetchTrendingTransfers, fetchOtherTransfers } from "./services/api";
 import { Transfer, TransferAPIResponse } from "./types";
 import { formatDistanceToNow, differenceInYears } from "date-fns";
@@ -233,109 +233,193 @@ const PlayerCard = ({
 }: {
   rumor: Transfer;
   featured: boolean;
-}) => (
-  <Link href={`/${rumor?.slug}`} className="group block">
-    <div
-      className={`relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-xl p-6 border ${
-        featured ? "border-blue-500/30" : "border-gray-700/50"
-      } hover:border-blue-500/50 transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-xl`}
-    >
-      {/* Featured indicator */}
-      {featured && (
-        <div className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-          <span className="text-xs">🔥</span>
-        </div>
-      )}
+}) => {
+  const [isInView, setIsInView] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-      {/* Player Info */}
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="relative">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full p-0.5">
-            <Image
-              src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
-              alt={rumor?.player?.name}
-              width={48}
-              height={48}
-              className="w-full h-full rounded-full object-cover"
-            />
+  const isCompleted = rumor?.score === 100;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Link href={`/${rumor?.slug}`} className="group block">
+      <div
+        ref={cardRef}
+        className={`relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-xl overflow-hidden border 
+          ${
+            isCompleted
+              ? "border-green-600 ring-2 ring-green-500"
+              : featured
+              ? "border-blue-500/30"
+              : "border-gray-700/50"
+          } 
+          ${
+            isCompleted
+              ? "hover:scale-100"
+              : "hover:scale-105 hover:border-blue-500/50"
+          } 
+          transform shadow-lg hover:shadow-xl transition-all duration-300`}
+      >
+        {/* Full Card Background Image with Fade Effect */}
+        <div
+          className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${
+            isInView ? "md:opacity-0 opacity-100" : ""
+          }`}
+        >
+          <Image
+            src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
+            alt={rumor?.player?.name}
+            width={400}
+            height={400}
+            className={`w-full h-full object-cover object-top transition-all duration-500`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 via-blue-900/70 to-gray-900/95"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-gray-900/30 to-gray-900/80"></div>
+        </div>
+
+        {/* Transfer Completed Badge */}
+        {isCompleted && (
+          <div className="absolute top-4 left-4 z-20 bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+            ✔ Completed
           </div>
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-white group-hover:text-blue-300 transition-colors">
-            {rumor?.player?.name}
-          </h3>
-          <p className="text-gray-400 text-sm">
-            Age {differenceInYears(new Date(), new Date(rumor?.player?.dob))}
-          </p>
-        </div>
-      </div>
+        )}
 
-      {/* Transfer Direction */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-200 truncate">
-            {rumor?.fromClub?.name}
-          </p>
-          <p className="text-xs text-gray-400">From</p>
-        </div>
-        <div className="flex-shrink-0 mx-4">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
+        {/* Featured indicator */}
+        {featured && !isCompleted && (
+          <div className="absolute top-4 right-4 z-20 w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+            <span className="text-sm">🔥</span>
           </div>
-        </div>
-        <div className="flex-1 text-right">
-          <p className="text-sm font-medium text-gray-200 truncate">
-            {rumor?.toClub?.name}
-          </p>
-          <p className="text-xs text-gray-400">To</p>
-        </div>
-      </div>
+        )}
 
-      {/* Transfer Details */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-semibold text-emerald-400">
-            {rumor?.fee === -1
-              ? "Undisclosed"
-              : rumor?.fee === 0
-              ? "Free"
-              : `€${rumor?.fee}M`}
-          </span>
-        </div>
+        {/* Hero Section */}
+        <div className="relative h-40 bg-gradient-to-br from-blue-600/30 to-indigo-600/30 flex items-center justify-center overflow-hidden z-10">
+          <div
+            className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.2)_0%,_transparent_70%)] group-hover:opacity-0 transition-opacity duration-500 ${
+              isInView ? "md:opacity-100 opacity-0" : ""
+            }`}
+          ></div>
 
-        <div className="flex items-center space-x-2">
-          <span
-            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getProbabilityBadge(
-              rumor?.score
-            )}`}
+          <div
+            className={`relative z-10 group-hover:opacity-0 transition-opacity duration-500 ${
+              isInView ? "md:opacity-100 opacity-0" : ""
+            }`}
           >
-            {rumor.score}%
-          </span>
+            <div className="w-28 h-28 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full p-1.5 shadow-2xl ring-4 ring-white/10">
+              <Image
+                src={rumor?.player?.avatar?.formats?.small?.url ?? ""}
+                alt={rumor?.player?.name}
+                width={112}
+                height={112}
+                className={`w-full h-full rounded-full object-cover border-3 border-white/30 `}
+              />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white shadow-xl flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Player Info */}
+        <div className="relative p-6 pt-4 z-10">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-white group-hover:text-blue-200 group-hover:drop-shadow-lg transition-all duration-300 mb-1">
+              {rumor?.player?.name}
+            </h3>
+            <p className="text-gray-400 group-hover:text-gray-300 text-sm font-medium transition-colors duration-300">
+              Age {differenceInYears(new Date(), new Date(rumor?.player?.dob))}
+            </p>
+          </div>
+
+          {/* Transfer Direction */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-200 group-hover:text-white group-hover:drop-shadow-md transition-all duration-300 truncate">
+                {rumor?.fromClub?.name}
+              </p>
+              <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                From
+              </p>
+            </div>
+            <div className="flex-shrink-0 mx-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 group-hover:from-blue-400 group-hover:to-indigo-400 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-sm font-medium text-gray-200 group-hover:text-white group-hover:drop-shadow-md transition-all duration-300 truncate">
+                {rumor?.toClub?.name}
+              </p>
+              <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                To
+              </p>
+            </div>
+          </div>
+
+          {/* Transfer Details */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-semibold text-emerald-400 group-hover:text-emerald-300 group-hover:drop-shadow-md transition-all duration-300">
+                {rumor?.fee === -1
+                  ? "Undisclosed"
+                  : rumor?.fee === 0
+                  ? "Free"
+                  : `€${rumor?.fee}M`}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium group-hover:shadow-lg transition-all duration-300 ${getProbabilityBadge(
+                  rumor?.score
+                )}`}
+              >
+                {rumor.score}%
+              </span>
+            </div>
+          </div>
+
+          {/* Last Updated */}
+          <div className="pt-4 border-t border-gray-700/50 group-hover:border-gray-600/50 transition-colors duration-300">
+            <p className="text-xs text-gray-400 group-hover:text-gray-300 group-hover:drop-shadow-sm transition-all duration-300">
+              Updated{" "}
+              {formatDistanceToNow(new Date(rumor?.lastUpdated), {
+                addSuffix: true,
+              })}
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Last Updated */}
-      <div className="pt-4 border-t border-gray-700/50">
-        <p className="text-xs text-gray-400">
-          Updated{" "}
-          {formatDistanceToNow(new Date(rumor?.lastUpdated), {
-            addSuffix: true,
-          })}
-        </p>
-      </div>
-    </div>
-  </Link>
-);
+    </Link>
+  );
+};
